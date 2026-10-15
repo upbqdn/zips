@@ -1,0 +1,494 @@
+/* ZIPs site stylesheet: EB Garamond text, Iosevka code, KaTeX mathematics; ink on paper, with
+   colour only for links. */
+
+/* {{{ faces */
+@font-face {
+  font-family: "EB Garamond"; src: url("../assets/fonts/eb-garamond-regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "EB Garamond"; src: url("../assets/fonts/eb-garamond-italic.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "EB Garamond"; src: url("../assets/fonts/eb-garamond-semibold.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+/* Iosevka without its programming ligatures, so code reads exactly as written */
+@font-face {
+  font-family: "Iosevka"; src: url("../assets/fonts/iosevka-regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+/* arrows and operators EB Garamond lacks (↩, ∧), from Iosevka rather than a system font */
+@font-face {
+  font-family: "Iosevka symbols"; src: url("../assets/fonts/iosevka-regular.woff2") format("woff2");
+  unicode-range: U+2190-21FF, U+2200-22FF; font-display: swap;
+}
+/* }}} faces */
+
+/* {{{ tokens */
+:root {
+  color-scheme: light dark;
+  --text: "EB Garamond", "Iosevka symbols", Garamond, serif;
+  --mono: "Iosevka", ui-monospace, monospace;
+  --body: 1.25rem;        /* 20 px */
+  --leading: 1.5;
+  --xh: .405;             /* the text x-height; code is scaled to it */
+  --bold: 600;
+  --small: .875em;
+  --measure: calc(36 * var(--body));
+  --gutter: 1.125rem;
+  --bar-h: 2.75rem;
+
+  --paper: #fbfaf8;
+  --ink: #2b2a28;
+  --muted: #68655f;
+  --hairline: #dedbd5;
+  --wash: #f2f0eb;        /* code blocks */
+  --accent: #2d6a4a;
+  --plate-pad: 0;         /* images sit on a white plate, which shows only in the dark theme */
+  --plate-blend: multiply;
+}
+@media (max-width: 480px) { :root { --body: 1.125rem; } }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #141414;
+    --ink: #e8e6e3;
+    --muted: #a6a29c;
+    --hairline: #383838;
+    --wash: #1d1d1c;
+    --accent: #8cc7a4;
+    --plate-pad: .6em;
+    --plate-blend: normal;
+  }
+  span.lightmode { display: none; }
+  span.darkmode { display: inline !important; }
+}
+/* }}} tokens */
+
+/* {{{ base */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+  -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--bar-h) + 1rem);   /* nothing scrolled to, or focused, sits under the bar */
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: var(--body);
+  line-height: var(--leading);
+  font-variant-numeric: lining-nums;
+  font-kerning: normal;
+}
+b, strong { font-weight: var(--bold); }
+a {
+  color: var(--accent);
+  text-decoration: underline 1px;
+  text-underline-offset: .18em;
+}
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, kbd, pre, samp, tt {
+  font-family: var(--mono);
+  font-size: 1em;
+  font-size-adjust: ex-height var(--xh);
+  font-variant-ligatures: none;
+  hyphens: manual; -webkit-hyphens: manual;
+}
+/* Inline code is one unit, so justification cannot stretch its spaces (Firefox stretches them
+   even under nowrap); a span wider than the line wraps inside itself. A grid, unlike an
+   inline-block, keeps its first line on the baseline. */
+:not(pre) > code {
+  display: inline-grid; grid-template-columns: minmax(0, max-content); max-width: 100%;
+  overflow-wrap: anywhere; text-align: left; text-indent: 0;
+}
+/* render.sh wraps code and the punctuation around it, which stays on the code's line */
+.nobr { white-space: nowrap; }
+.nobr > code { white-space: normal; max-width: calc(100% - 1em); }
+a > code { text-decoration: underline 1px; text-underline-offset: .18em; }
+a:hover > code { text-decoration-thickness: 2px; }
+cite { font-style: italic; }
+hr { border: 0; border-top: 1px solid var(--hairline); margin: 2em 0; }
+img { max-width: 100%; height: auto; }
+/* }}} base */
+
+/* {{{ the bar: a running head linking the index, the source and the protocol specification */
+.bar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 1.4em;
+  height: var(--bar-h);
+  padding: 0 var(--gutter);
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+  font-size: var(--small);
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.bar a { color: var(--muted); text-decoration: none; }
+.bar a:hover { color: var(--ink); text-decoration: underline 1px; }
+.bar .home { font-variant-caps: small-caps; letter-spacing: .04em; }
+.bar .here { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.bar .home ~ a { margin-left: auto; }   /* Source and Protocol keep to the right */
+@media (max-width: 600px) {
+  .bar { gap: 1.1em; }
+  .bar .home { font-size: 0; }
+  .bar .home::before { content: "ZIPs"; font-size: calc(var(--body) * .875); }
+}
+/* }}} */
+
+/* {{{ the page */
+main {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 2.4rem var(--gutter) 4rem;
+  overflow-wrap: break-word;
+  font-synthesis: none;   /* no faux bold or italic of a face that has none */
+}
+main > section { margin: 0; padding: 0; }
+
+/* the title: the number in small capitals over the name, as on a title page */
+h1.title {
+  margin: 0 0 1.1em;
+  font-size: 1.9em; font-weight: 400; line-height: 1.15;
+  text-wrap: balance;
+}
+h1.title .number {
+  display: block; margin-bottom: .45em;
+  font-size: calc(1em / 1.9);
+  font-variant-caps: all-small-caps; letter-spacing: .06em;
+  color: var(--muted);
+}
+h1.title .sep { display: none; }
+
+/* the preamble: its fields in two columns, between hairlines */
+dl.preamble {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 1.2em; row-gap: .2em;
+  margin: 0 0 1.6em;
+  padding: .9em 0;
+  border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline);
+  font-size: var(--small);
+  line-height: 1.4;
+}
+dl.preamble > div { display: contents; }
+dl.preamble > :is(.field-zip, .field-title) { display: none; }   /* the title above gives both */
+dl.preamble dt {
+  font-weight: 400; color: var(--muted);
+  font-variant-caps: all-small-caps; letter-spacing: .04em;
+}
+dl.preamble dd { margin: 0; overflow-wrap: anywhere; }
+dl.preamble .v { display: block; padding-left: 1em; text-indent: -1em; }   /* a wrapped line hangs */
+/* the first heading follows the preamble closely */
+:is(dl.preamble + section > h2:first-child, dl.preamble + h1) { margin-top: 1.2em; }
+@media (max-width: 480px) {
+  /* on a phone each field's name stands over its value */
+  dl.preamble { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+  dl.preamble > div:not(.field-zip, .field-title) ~ div dt { margin-top: .45em; }
+}
+/* }}} */
+
+/* {{{ headings: size and weight, never colour. rst sections start at h2, Markdown ones at h1. */
+h1, h2, h3, h4, h5, h6 { font-family: inherit; text-wrap: balance; }
+:is(main.rst h2, main.md h1:not(.title)) {
+  margin: 2em 0 .6em;
+  font-size: 1.44em; font-weight: var(--bold); line-height: 1.2;
+}
+:is(main.rst h3, main.md h2) {
+  margin: 1.8em 0 .5em;
+  font-size: 1.2em; font-weight: var(--bold); line-height: 1.25;
+}
+:is(main.rst h4, main.md h3) {
+  margin: 1.5em 0 .3em;
+  font-size: 1em; font-weight: var(--bold); line-height: inherit;
+}
+:is(main.rst :is(h5, h6), main.md :is(h4, h5, h6)) {
+  margin: 1.3em 0 .2em;
+  font-size: 1em; font-weight: 400; font-style: italic; line-height: inherit;
+}
+/* the deepest level is upright, under an italic one (small capitals would hide an identifier's case) */
+:is(main.rst h6, main.md :is(h5, h6)) { font-style: normal; }
+:is(h1, h2, h3, h4, h5, h6) code {
+  font-size: 1em;
+  font-synthesis: weight style;   /* the heading's weight or slant is its only cue */
+}
+/* the anchor: a muted mark after the heading, shown on hover */
+.section-anchor img { display: none; }
+.section-anchor a { color: var(--muted); text-decoration: none; font-weight: 400; }
+.section-anchor a::after { content: "#"; }
+@media (hover: hover) and (pointer: fine) {
+  .section-anchor { opacity: 0; }
+  :is(h1, h2, h3, h4, h5, h6):hover .section-anchor, .section-anchor:focus-within { opacity: 1; }
+}
+/* }}} */
+
+/* {{{ text: justified and hyphenated, with a gap between paragraphs */
+p { margin: 0 0 .75em; }
+/* a paragraph is justified; a short list item or definition stays ragged */
+main p { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+ul, ol { margin: 0 0 .75em; padding-left: 1.4em; }
+li { margin: .25em 0; }
+li > p { margin: .25em 0; }
+li > :is(ul, ol) { margin: .25em 0; }
+/* Default nested-ordered-list numbering for Markdown ZIPs (which have no way to set
+   `<ol type="...">` from source): numeric, then alphabetic, then lower-roman (1. a. i.). The
+   `:not([type])` qualifier keeps explicit types from the rst renderer or inline HTML. */
+li ol:not([type]) { list-style-type: lower-alpha; }
+li ol:not([type]) li ol:not([type]) { list-style-type: lower-roman; }
+dl { margin: 0 0 .75em; }
+dt { font-weight: var(--bold); }
+dd { margin: 0 0 .5em 1.4em; }
+dd > p { margin: 0 0 .4em; }
+blockquote {
+  margin: 1em 0;
+  padding: 0 0 0 1em;
+  border-left: 2px solid var(--hairline);
+}
+blockquote > :last-child { margin-bottom: 0; }
+aside:is(.note, .warning) { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+details { margin: 0 0 .75em; }
+summary { cursor: pointer; color: var(--accent); }
+/* }}} */
+
+/* {{{ code */
+pre {
+  margin: 1em 0;
+  padding: .7em .9em;
+  overflow-x: auto; overflow-y: hidden;
+  background: var(--wash);
+  font-size: var(--small);
+  line-height: 1;   /* box-drawing verticals join */
+  text-align: left;
+}
+pre code { overflow-wrap: normal; font-size: 1em; }
+/* }}} */
+
+/* {{{ notes and warnings: a rule and a label, no fill. rst writes an aside; Markdown an empty
+   div before the paragraph it marks. */
+aside.note, aside.warning, div.note + p, div.warning + p {
+  margin: 1.4em 0;
+  padding: .1em 0 .1em 1em;
+  border-left: 1px solid var(--ink);
+}
+aside.warning, div.warning + p { border-left-width: 3px; }
+aside.note::before, aside.warning::before, div.note + p::before, div.warning + p::before {
+  display: block;
+  font-variant-caps: all-small-caps; letter-spacing: .06em;
+  color: var(--muted);
+}
+aside.note::before, div.note + p::before { content: "Note"; }
+aside.warning::before, div.warning + p::before { content: "Warning"; color: var(--ink); font-weight: var(--bold); }
+aside > p:last-child { margin-bottom: 0; }
+div.note, div.warning { display: none; }
+/* }}} */
+
+/* {{{ tables: hairline rows, no verticals; a wide one scrolls in the column */
+table {
+  display: block; width: max-content; max-width: 100%;
+  margin: 1.2em 0;
+  overflow-x: auto; overflow-y: hidden;
+  border-collapse: collapse;
+  font-size: var(--small);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+th, td {
+  padding: .4em .75em;
+  border: 0; border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+  text-align: left;
+  line-height: 1.4;
+}
+th { font-weight: var(--bold); }
+:is(th, td):first-child { padding-left: 0; }
+:is(th, td):last-child { padding-right: 0; }
+tr:first-child th { border-bottom-color: var(--muted); }
+/* a two-row head: the rule under the last row ends it */
+thead tr + tr th:first-child { padding-left: .75em; }
+thead tr:not(:last-child) th:not([rowspan]) { border-bottom-color: var(--hairline); }
+thead tr:last-child th { border-bottom-color: var(--muted); }
+/* code in a cell breaks only where render.sh allows (<wbr>), so the table scrolls instead */
+:is(td, th) code:not(pre > code) { display: inline-block; overflow-wrap: normal; }
+:is(th, td) > p { margin: 0 0 .4em; text-align: left; hyphens: manual; }
+:is(th, td) > p:last-child { margin: 0; }
+/* }}} */
+
+/* {{{ the index: number, title and status */
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips,
+    #drafts-without-assigned-zip-numbers) table {
+  display: table; width: 100%;
+  font-size: 1em;
+}
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips) td:first-child,
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips) th:first-child {
+  width: 3.2em; padding-left: 0; text-align: right;
+}
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips,
+    #drafts-without-assigned-zip-numbers) :is(td, th):last-child,
+#draft-zips :is(td, th):nth-child(3) {
+  padding-right: 0; color: var(--muted); font-size: var(--small);
+}
+/* the title takes the width, breaking a long word only if it must */
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips,
+    #drafts-without-assigned-zip-numbers) :is(td, th):nth-child(2) { width: 100%; }
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips)
+  td:nth-child(2) { overflow-wrap: anywhere; }
+:is(#released-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips) td:last-child {
+  min-width: 9em;
+}
+/* a discussion link cut short; it still leads to the whole URL */
+:is(#draft-zips, #drafts-without-assigned-zip-numbers) td:last-child a {
+  display: inline-block; max-width: 9em; vertical-align: bottom;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (min-width: 481px) {
+  :is(#draft-zips, #drafts-without-assigned-zip-numbers) th:last-child { white-space: nowrap; }
+}
+@media (max-width: 480px) {
+  :is(#released-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips) td:last-child { min-width: 0; }
+  /* this one scrolls in the column, like other tables */
+  #drafts-without-assigned-zip-numbers table { display: block; }
+}
+@media (max-width: 640px) {
+  /* four columns do not fit a narrow column: the discussion goes under the title and the status */
+  #draft-zips table { display: block; }
+  #draft-zips tbody {
+    display: grid; grid-template-columns: 3.2em minmax(0, 1fr) max-content; align-items: baseline;
+  }
+  #draft-zips tr { display: contents; }
+  #draft-zips :is(td, th):first-child {
+    grid-row: span 2; align-self: stretch; overflow-wrap: anywhere; hyphens: auto;
+  }
+  #draft-zips :is(td, th):is(:nth-child(2), :nth-child(3)) { border-bottom: 0; }
+  #draft-zips :is(td, th):nth-child(4) {
+    grid-column: 2 / -1; padding-top: 0; padding-left: calc(.75em / .875);   /* under the title */
+  }
+}
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips,
+    #drafts-without-assigned-zip-numbers) :is(td, th) { vertical-align: baseline; }
+#drafts-without-assigned-zip-numbers td:first-child {
+  padding-left: 0; font-family: var(--mono); font-size: var(--small);
+  font-size-adjust: ex-height var(--xh);
+}
+:is(#released-zips, #draft-zips, #withdrawn-rejected-or-obsolete-zips, #index-of-zips,
+    #drafts-without-assigned-zip-numbers) tr:hover td { background: var(--wash); }
+span.reserved, a.reserved, a.reserved:visited { color: var(--muted); }
+a.reserved { text-decoration: none; }
+a.reserved:hover { color: var(--ink); text-decoration: underline 1px; }
+strike, strike a { color: var(--muted); }
+/* }}} */
+
+/* {{{ references and footnotes, labelled [n] */
+a.footnote_reference::before, a.footnote-ref::before, a.footnote::before { content: "["; }
+a.footnote_reference::after, a.footnote-ref::after, a.footnote::after { content: "]"; }
+a.footnote-ref sup, a.footnote sup { vertical-align: baseline; font-size: 100%; }
+/* rst: one table a reference */
+table.footnote {
+  display: table; width: 100%;
+  margin: 0 0 .3em;
+  font-size: var(--small);
+}
+table.footnote :is(th, td) { border: 0; padding: .1em 0; }
+table.footnote th {
+  width: 2.6em; padding-right: .7em;
+  font-weight: 400; text-align: right; color: var(--muted);
+}
+table.footnote th::before { content: "["; }
+table.footnote th::after { content: "]"; }
+table.footnote td { overflow-wrap: anywhere; }
+/* Markdown: an ordered list, of footnotes [n] or citations (n) */
+:is(.footnotes, .citations) { margin-top: 0; font-size: var(--small); }
+.footnotes + .citations { margin-top: .75em; }
+:is(.footnotes, .citations) hr { display: none; }
+:is(.footnotes, .citations) ol { padding-left: 2.6em; }
+.footnotes ol { list-style-type: md-references; }
+.citations ol { list-style-type: md-citations; }
+:is(.footnotes, .citations) li { margin: .1em 0; }
+:is(.footnotes, .citations) li > p { margin: 0; text-align: left; hyphens: manual; }
+:is(.footnotes, .citations) ::marker { color: var(--muted); }
+.footnote-back::before { content: " "; }
+a.reversefootnote, a.reversecitation { text-decoration: none; }
+@counter-style md-references {
+  system: extends decimal;
+  prefix: "[";
+  suffix: "] ";
+}
+@counter-style md-citations {
+  system: extends decimal;
+  prefix: "(";
+  suffix: ") ";
+}
+/* }}} */
+
+/* {{{ mathematics (KaTeX): its Computer Modern at the text x-height */
+.katex { font-size: .94em; position: relative; }   /* its hidden MathML stays inside a scroller */
+.katex-display, div.math {
+  margin: 1em 0;
+  overflow-x: auto; overflow-y: hidden;
+  padding: .15em 0;
+}
+div.math .katex-display { margin: 0; padding: 0; }
+/* An inline formula cannot break, so a block holding one scrolls in the column if it must. The
+   4px gives room to a focus ring and to a glyph that overhangs by a little. Never on li, which
+   would clip its marker. */
+main :where(p, ul, ol, dd, blockquote):has(.katex) {
+  overflow-x: auto; overflow-y: hidden;
+  padding-right: 4px; margin-right: -4px;
+}
+main :where(p):has(.katex) { padding-left: 4px; margin-left: -4px; }
+/* pseudo-code with line breaks (\\) or arrays stays ragged, and its statements stay whole */
+main p:has(.katex :is(.newline, .mtable)) { text-align: left; }
+main p:has(.katex .newline) { white-space: nowrap; }
+/* ZIP 317 spaces its displays with empty paragraphs; the display's margin does that now */
+div.math + p:has(> br:only-child), p:has(> br:only-child):has(+ div.math) { display: none; }
+/* `\textit{...}` names a pool (IronwoodPool), set as the text's italic *Ironwood pool*. */
+.katex .textit {
+  font-family: var(--text) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  font-size: calc(1em / .94) !important;
+}
+/* `\textsf{...}` is text in the text face: `render.sh` rewrites `$x$.` to
+   `$x\kern-0.05em\textsf{.}$`, and moves a `)` after a formula into it likewise, so that no line
+   breaks between a formula and its punctuation; `\cases` uses it for words. */
+.katex .textsf {
+  font-family: var(--text) !important;
+  font-style: normal !important;
+  font-size: calc(1em / .94) !important;
+}
+/* }}} */
+
+/* {{{ figures and diagrams: on a white plate in the dark theme */
+figure { margin: 1.2em 0; }
+figure > img { display: block; margin-inline: auto; }
+figcaption { margin-top: .4em; font-size: var(--small); color: var(--muted); text-align: center; }
+main img:not(.section-anchor) {
+  padding: var(--plate-pad);
+  background: #fff;
+  mix-blend-mode: var(--plate-blend);
+}
+pre:has(> code.mermaid) { padding: 0; background: none; overflow: visible; }
+code.mermaid { display: block; color: transparent; }
+code.mermaid > svg {
+  display: block; max-width: 100%; height: auto;
+  padding: var(--plate-pad);
+  background: #fff;
+  mix-blend-mode: var(--plate-blend);
+}
+/* }}} */
+
+/* {{{ print */
+@media print {
+  :root {
+    --body: 11pt; --paper: #fff; --ink: #000; --accent: #000; --muted: #555; --hairline: #ccc;
+    --wash: #f2f0eb; --plate-pad: 0; --plate-blend: multiply;
+  }
+  .bar, .section-anchor { display: none !important; }
+  main { max-width: none; padding: 0; }
+  pre, .katex-display, div.math, main :is(p, ul, ol, dd, blockquote) { overflow: visible !important; }
+  table { display: table; width: auto; max-width: 100%; }
+  pre { white-space: pre-wrap; }
+  a { text-decoration: none; }
+}
+/* }}} */
